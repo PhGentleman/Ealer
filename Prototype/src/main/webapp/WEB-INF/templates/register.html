@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>注册</title>
+    <link th:href="@{/static/css/login_register.css}" rel="stylesheet" type="text/css"/>
+    <link rel="shortcut icon" th:href="@{/static/img/3.ico}" type="image/x-icon">
+    <script th:src="@{/static/js/jquery.min.js}"></script>
+</head>
+<body>
+<div>
+    <img th:src="@{/static/img/bg2.webp}" class="bg"/>
+    <div class="reg">
+        <h1>欢迎注册</h1>
+        <form th:action="@{/register}" method="post">
+            <div><p>用户名</p><input type="text" minlength="3" maxlength="16" id="username" name="username" placeholder="用户名的长度应在3~16之间" required onblur="validation($(this))"/> </div>
+            <div id="usernameresults" class="validate" for="username"></div>
+            <div><p>手机号</p><input type="tel" maxlength="11" id="tel" name="tel" placeholder="可用的手机号码" required onblur="validation($(this))"/> </div>
+            <div id="telresults" class="validate" for="tel"></div>
+            <div><p>密&emsp;码</p><input type="password" minlength="8" maxlength="16" id="password" name="password" placeholder="密码的长度应在8~16之间" required onblur="validation($(this))"/></div>
+            <div id="passwordresults" class="validate" for="password"></div>
+            <div><p>邮&emsp;箱</p><input type="email" id="email" name="email" placeholder="可用的邮箱地址" required onblur="validation($(this))"/> </div>
+            <div id="emailresults" class="validate" for="email"></div>
+            <div class="code"><input type="text" name="userCode" minlength="4" maxlength="4" id="code" placeholder="验证码" required onblur="validation($(this))"/><img th:src="@{getVerifyImage}" onclick="this.src=this.src+'?'+Math.random()" ></div>
+            <div id="coderesults" style="display: none;"></div>
+            <input type="submit" id="submit" name="submit" value="立即注册" class="submit"/>
+            <label class="rule" style="float:right; margin-right:20px;"><input type="checkbox" name="rule" required/>阅读并同意<a th:href="@{#}">《迫真用户使用协议》</a>和<a th:href="@{#}">《迫真隐私政策》</a></label>
+        </form>
+        <p id="login">已有账号？<a th:href="@{/login}">直接登录></a></p>
+        <p id="cr">No Copyright@2023</p>
+    </div>
+</div>
+
+<!--输入合法性验证-->
+<script>
+    function validation(input){
+        const id = $(input).attr("id");
+        const val = $(input).val();
+        if (val === ''){
+            $("#" + id + "results").text("请输入");
+            return;
+        }
+        $.post(
+            "[(@{/validation})]",
+            {
+              type: id,
+              value: val
+            },
+            function (data, status){
+                $("#" + id + "results").text(data);
+                console.log(status);
+            }
+        )
+    }
+</script>
+
+<!--阻止非法注册-->
+<script>
+    $("#submit").click(function (){
+        const ac = "可用";
+        const ids = ["username", "password", "tel", "email", "code"];
+        const form = $("form");
+        ids.forEach(function (id){
+            let info = $("#" + id + "results").text().trim();
+            console.log(info);
+            if (info !== ac){
+                console.log(id);
+                form.on("submit", function (e){
+                    e.preventDefault();
+                })
+                alert(info + "!");
+                throw new Error("DONT SUBMIT NOW!");
+            }
+        })
+        form.off("submit");
+    })
+</script>
+</body>
+</html>

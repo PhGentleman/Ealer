@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.ph.ealer.mapper.UserMapper">
+
+    <insert id="addUser" useGeneratedKeys="true" keyProperty="uid">
+        insert into user(username, password, tel, email) value (#{username}, #{password}, #{tel}, #{email});
+    </insert>
+
+    <select id="queryUserByTel" resultType="org.ph.ealer.bean.User">
+        select * from user where tel = #{tel}
+    </select>
+    <!---->
+    <select id="queryUserByEmail" resultType="org.ph.ealer.bean.User">
+        select * from user where email = #{email}
+    </select>
+    <select id="queryUserById" resultType="org.ph.ealer.bean.User">
+        select * from user where u_id = #{uid}
+    </select>
+    <select id="queryUserByUsername" resultType="org.ph.ealer.bean.User">
+        select * from user where username = #{username}
+    </select>
+
+</mapper>

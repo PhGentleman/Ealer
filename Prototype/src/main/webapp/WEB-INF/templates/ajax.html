@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script th:src="@{/static/js/jquery.min.js}"></script>
+</head>
+<body>
+
+<div id="app">
+    <input id="username" onblur="testAjax($(this))"/><p id="info"></p><br>
+</div>
+
+<script>
+    function testAjax(data){
+        if ($(data).val() == ''){
+            $("#info").text("请输入").css("text-color", "red");
+        }
+        $.post(
+            "[(@{/testAjax})]/" + $(data).attr("id") + "/" + $(data).val(),
+            function (data, status){
+                $("#info").text(data);
+                console.log(status);
+            }
+        )
+    }
+</script>
+
+
+</body>
+</html>

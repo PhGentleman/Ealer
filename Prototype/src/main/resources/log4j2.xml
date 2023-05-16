@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <Loggers>
+        <!--TRACE < DEBUG < INFO < WARN < ERROR < FATAL-->
+        <root level="DEBUG">
+            <appender-ref ref="spring"/>
+        </root>
+
+        <Logger name = "org.apache.http.wire" level="OFF"/>
+    </Loggers>
+
+    <!--变量定义-->
+    <Properties>
+        <Property name="myPattern" value="%d{yyyy-MM-dd HH:mm:ss SSS} [%t] %-3level %logger{1024} - %msg%n"/>
+        <Property name="dir_url">YOUR LOG DIRECTORY</Property>
+    </Properties>
+
+    <appenders>
+        <!--输出日志信息到控制台-->
+        <console name="spring" target="SYSTEM_OUT">
+            <!--控制日志输出的格式-->
+            <PatternLayout charset="UTF-8" pattern="%d{yyyy-MM-dd HH:mm:ss SSS} [%t] %-3level %logger{1024} - %msg%n"/>
+        </console>
+
+        <!--文件会打印出所有信息，这个log每次运行程序会自动清空，由append属性决定，适合临时测试用-->
+        <!--<File name="log" fileName="${dir_url}/test.log" append="false">
+            <PatternLayout pattern="${myPattern}"/>
+        </File>-->
+
+        <!-- 这个会打印出所有的信息，
+            每次大小超过size，
+            则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，
+            作为存档-->
+        <!--<RollingFile name="RollingFile" fileName="${dir_url}/app.log"
+                     filePattern="log/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout pattern="${myPattern}"/>
+            <SizeBasedTriggeringPolicy size="50MB"/>
+            &lt;!&ndash; DefaultRolloverStrategy属性如不设置，
+            则默认为最多同一文件夹下7个文件，这里设置了20 &ndash;&gt;
+            <DefaultRolloverStrategy max="20"/>
+        </RollingFile>-->
+    </appenders>
+</configuration>

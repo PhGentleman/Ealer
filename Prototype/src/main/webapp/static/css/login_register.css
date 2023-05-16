@@ -1,0 +1,129 @@
+body{
+	box-sizing: border-box; margin: 0; padding: 0; border: 0;
+}
+.bg{
+	position:fixed; left:-160px; bottom: -80px;
+	background-size:cover;
+}
+.log{
+	height: 500px;
+	width: 460px;
+	border-radius: 5%;
+	background-color: #f3f1f3;
+	opacity: 0.7;
+	margin-top: 0;
+	padding: 10px 45px 0  0;
+	position: relative; top:86px; left: 34%;
+}
+.reg{
+	height: 600px;
+	width: 460px;
+	border-radius: 5%;
+	background-color: #f3f1f3;
+	opacity: 0.7;
+	margin-top: 60px;
+	padding: 10px 45px 0  0;
+	position: relative; left: 34%;
+}
+h1{
+	position: relative; left: 13%;
+	margin-top: 30px;
+}
+form{
+	height: 40%;
+	padding-right: 60px;
+	color: #000000;
+	font-weight: 600;
+	position: relative; left: 10%;
+}
+input{
+	margin: 10px;
+	margin-bottom: 15px;
+	height: 30px;
+	width: 300px;
+	border: 0;
+	border-radius: 5px;
+	font-size: large;
+	text-indent: 1em;
+}
+input::placeholder{
+	font-size: small;
+}
+p:not(.rule){
+	font-weight: 600;
+	color: #000000;
+	margin-bottom: 30px;
+	float: left;
+	border: 0;margin: 0;padding: 14px;
+}
+form div{
+	float: right;
+}
+.rule{
+	font-weight: 500;
+	font-size: small;
+	border: 0;margin: 0;padding: 0;
+	
+}
+input[type="submit"]{
+	background-color: #55aaff;
+	height: 50px;
+	width: 376px;
+	margin-top: 20px;
+	float: right;
+	color: #f4ffff;
+	font-size: x-large;
+	font-weight: 800;
+	letter-spacing: 1em;
+	text-indent: 1em;
+}
+a{
+	text-decoration: none;
+}
+input[type="checkbox"]{
+	height: 16px;
+	width: 16px;
+	padding: 0;
+	border: 0;
+	margin: 0 14px 0;
+	vertical-align:middle;
+}
+#login{
+	color: #666666;
+	float: right;
+	margin-right: 10px;
+	font-weight: 400;
+}
+#help{
+	height: 50px;
+	width: 100px;
+	color: #666666;
+	position: relative;top: 100px; left: 177px;
+}
+#help a{
+	color: #666666;
+}
+#cr{
+	font-size: small;
+	color: #666666;
+	position: relative;top: 70px; left: 169px;
+}
+
+.code{
+	position:relative; top:8px; right: -10px;
+	float:right;
+	width:250px;
+}
+.code input{
+	width:50%;
+}
+.code img{
+	margin-bottom: -11.5px; 
+}
+
+.validate{
+	position: relative; right:20px; bottom:12px;
+	height: 1px;
+	font-size: small;
+	font-weight: 400;
+}

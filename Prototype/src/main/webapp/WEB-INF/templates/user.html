@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${username} + '的个人空间'"></title>
+    <script src="/static/js/vue.js"></script>
+    <link href="/static/bootstrap5/css/bootstrap.css" rel="stylesheet" type="text/css"/>
+    <script src="/static/bootstrap5/js/bootstrap.js" ></script>
+
+    <script th:src="@{/static/js/vue.js}" ></script>
+    <link th:href="@{/static/bootstrap5/css/bootstrap.css}" rel="stylesheet" type="text/css"/>
+    <script th:src="@{/static/bootstrap5/js/bootstrap.bundle.js}" ></script>
+    <script th:src="@{/static/js/axios.min.js}"></script>
+</head>
+
+<body style="border:0; margin:0; padding:0;">
+<div class="p-0 m-0 border-0 mh-100" id="main" >
+    <!-- 导航 -->
+    <nav class="container-fluid navbar navbar-light bg-light ps-2">
+        <div class="row w-100" ><!--12col-->
+            <div class="col-3">
+                <a th:href="@{/}" style="text-decoration: none;">
+                    <div class="navbar-brand d-flex flex-row">
+                        <div class="align-self-center"><img class="rounded-3" style="max-width: 50px; max-height: 50px;" th:src="@{/static/img/logo.jpg}"></div>
+                        <div class="align-self-center text-primary"><h2 class="ms-3 mt-2" >Ealer</h2></div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-9 d-flex justify-content-end">
+                <div class="d-flex align-content-center">
+                    <div>
+                        <a class="btn" th:text="${username}" th:href="@{/user}"></a>
+                        <a class="btn" th:href="@{/logout}">登出</a>
+                        <a class="btn" th:href="@{/upload}">上传</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-14">
+                <h2>{{username}}的个人空间</h2>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid d-flex" style="max-width: 100%; padding-left: 4rem; align-items:flex-start;">
+        <div class="" v-for="group in groups">
+            <div v-for="picture in group.value">
+                <div class="card rounded-3 m-3" :id="'pic' + picture.pid" style="max-width: 314px;">
+                    <a class="btn p-0" @click="openDetail(picture)">
+                        <img class="img-thumbnail p-1" :src="picture.thumbnailPath">
+                    </a>
+                    <h4 class="ms-3 mt-2">{{picture.picName}}</h4>
+                    <div class="d-flex flex-wrap ms-2 mb-2 ">
+                        <div class="p-0 ms-1 me-1" v-for="tag in picture.tags">
+                            <span class="badge bg-light text-dark" v-html="tag.tagName"></span>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <div class="dropdown ">
+                            <a class="btn" @click="getPid(picture.pid)" data-bs-toggle="dropdown" aria-expanded="false" >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
+                                    <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                                </svg>
+                            </a>
+                            <ul class="dropdown-menu"  >
+                                <li>
+                                    <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#rename">
+                                        修改作品名
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#editTag">
+                                        修改标签
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#deletePic">
+                                        删除作品
+                                    </button>
+                                </li>
+                                <li><a class="dropdown-item" :href="picture.completePath">下载</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改作品名 -->
+    <div class="modal fade" id="rename" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">修改作品名</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label" for="newName">新作品名称</label>
+                    <input class="form-control" v-model="picName" type="text" minlength="3" maxlength="30" id="newName" name="picName" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button class="btn btn-primary" @click="rename" type="submit" >保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--修改标签-->
+    <div class="modal fade" id="editTag" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">修改标签</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex flex-wrap ms-2 mb-2 ">
+                        <div class="p-0 ms-1 me-1 mt-1" v-for="tag in tags">
+                            <span class="badge bg-light text-dark">
+                                {{tag.tagName}}
+                                <span class="btn" @click="removeTag(tag)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
+                                    </svg>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="input-group mt-3">
+                        <input class="form-control" v-model="tagName" type="text">
+                        <button class="btn btn-outline-secondary" @click="addTag" type="button">添加</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @click="tagPredict($event)" type="button">预测标签</button>
+                    <button class="btn btn-primary" type="submit" data-bs-dismiss="modal">完成</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--删除图像-->
+    <div class="modal fade" id="deletePic" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    您确定要删除该作品吗？
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button class="btn btn-primary" @click="deletePic" type="submit" >确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--详情页-->
+    <div class="modal fade" v-if="hasDetail" id="details" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex justify-content-center">
+                    <img class="img-fluid" :src="detailPic.completePath">
+                </div>
+                <div class="modal-footer">
+                    <div class="row container-fluid justify-content-end p-0">
+                        <a class="btn col-auto"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
+                            <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z"/>
+                        </svg></a>
+                        <a class="btn col-auto"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-star" viewBox="0 0 16 16">
+                            <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288L8 2.223l1.847 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.565.565 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z"/>
+                        </svg></a>
+                        <a class="btn col-auto"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-three-dots" viewBox="0 0 16 16">
+                            <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+                        </svg></a>
+                    </div>
+                    <div class="row container-fluid justify-content-start ps-5 pe-5">
+                        <h3 class="col ms-3 mt-2" v-html="detailPic.picName"></h3>
+                    </div>
+                    <div class="row container-fluid justify-content-start ps-5 pe-5">
+                        <div class="d-flex flex-wrap ms-2 mb-2">
+                            <div class="p-0 ms-1 me-1" v-for="tag in detailPic.tags">
+                                <h5>
+                                    <span class="badge bg-light text-dark" v-html="tag.tagName"></span>
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row container-fluid justify-content-start ps-5 pe-5">
+                        <a class="col-auto btn ms-3 mt-2" :href="userPrefix + detailPic.owner.uid"><h5>{{detailPic.owner.username}}</h5></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--消息-->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+        <div class="toast hide" id="liveToast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">{{infoTitle}}</strong>
+                <small>刚刚</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                <p>{{infoContent}}</p>
+            </div>
+        </div>
+    </div>
+
+    <nav class="mt-3">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" :class="currentPage === 1 ? 'disabled' : ''">
+                <a class="page-link" :href="pagePrefix + (currentPage - 1)">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item" v-for="page in totalPages" :class="page === currentPage ? 'active' : ''">
+                <span class="page-link" v-if="page === currentPage">{{page}}</span>
+                <a class="page-link" v-else :href="pagePrefix + page">{{page}}</a>
+            </li>
+            <li class="page-item" :class="currentPage === totalPages ? 'disabled' : ''">
+                <a class="page-link" :href="pagePrefix + (currentPage + 1)">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+</div>
+
+
+
+<script th:inline="javascript">
+    //
+    const controller = Vue.createApp({
+        setup(){
+            // 页控制
+            const currentPage = [[${page.currentPage}]]
+            const totalPages = [[${page.totalPages}]]
+            const pageRecords = [[${page.pageRecords}]]
+            const pagePrefix = '[(@{/user/})]'
+            const userPrefix = '[(@{/user/})]'
+            const uid = [(${userId})]
+            const username = '[(${username})]'
+            let pictures = Vue.ref(/*[[${page.pictures}]]*/)
+            let realRecords = pictures.value.length;
+            let records = pictures.value.length;
+            let groups = Vue.ref(new Array(4))
+            for (let i = 0; i < 4; i++){
+                groups.value[i] = Vue.ref([])
+            }
+            while (records !== 0){
+                for (let i = 0; i < 4; i++){
+                    if (records === 0) break
+                    groups.value[i].value.push(pictures.value[--records])
+                }
+            }
+            // 编辑控制
+            let pid = Vue.ref()
+            let pos = 0
+            let picName = Vue.ref()
+            let tags = Vue.ref()
+            let tagName = Vue.ref()
+            let infoTitle = Vue.ref()
+            let infoContent = Vue.ref()
+
+            function getPid(id){
+                pid.value = id
+                for (pos = 0; pos < realRecords; pos++){
+                    if (pictures.value[pos].pid === pid.value){
+                        tags.value = pictures.value[pos].tags
+                        break
+                    }
+                }
+            }
+
+            function rename(){
+                let param = new FormData()
+                param.append('pid', pid.value)
+                param.append('picName', picName.value)
+                axios.post('[(@{/picture/rename})]', param).then(response => {
+                    console.log(response.data)
+                    if (response.data.trim() === 'Success'){
+                        infoContent.value = '成功'
+                    }else {
+                        infoContent.value = response.data
+                    }
+                    for (let i = 0; i < realRecords; i++){
+                        if (pictures.value[i].pid === pid.value){
+                            pictures.value[i].picName = picName.value
+                            break
+                        }
+                    }
+                    let renameW = document.getElementById('rename')
+                    let modal = bootstrap.Modal.getInstance(renameW)
+                    modal.hide()
+                    infoTitle.value = '修改作品名'
+                    new bootstrap.Toast(document.getElementById("liveToast")).show()
+                })
+            }
+
+            function addTag(){
+                if (tagName.value.trim() === ''){
+                    tagName.value = ''
+                    return
+                }
+                tags.value.forEach((tag) => {
+                    if (tag.tagName === tagName.value){
+                        tagName.value = ''
+                        infoTitle.value = '添加标签'
+                        infoContent.value = '已存在重复标签'
+                        new bootstrap.Toast(document.getElementById("liveToast")).show()
+                        throw new Error('same tag')
+                    }
+                })
+                let param = new FormData()
+                param.append('pid', pid.value)
+                param.append('tagName', tagName.value)
+                axios.post('[(@{/picture/addTag})]', param).then(response => {
+                    if (response.data.trim() === 'Success'){
+                        infoContent.value = '成功'
+                        tags.value.push({
+                            'tagName': tagName.value
+                        })
+                        tagName.value = ''
+                    }else {
+                        infoContent.value = response.data
+                    }
+                })
+                infoTitle.value = '添加标签'
+                new bootstrap.Toast(document.getElementById("liveToast")).show()
+            }
+
+            function removeTag(tag){
+                let param = new FormData()
+                param.append('pid', pid.value)
+                param.append('tagName', tag.tagName)
+                axios.post('[(@{/picture/removeTag})]', param).then(response => {
+                    if (response.data.trim() === 'Success'){
+                        infoContent.value = '成功'
+                        tags.value = tags.value.filter((t) => t !== tag)
+                        pictures.value[pos].tags = tags.value
+                    }else {
+                        infoContent.value = response.data
+                    }
+                })
+                infoTitle.value = '删除标签'
+                new bootstrap.Toast(document.getElementById("liveToast")).show()
+            }
+
+            function tagPredict(event){
+                let filePath = pictures.value[pos].completePath
+                let param = new FormData()
+                axios.get(filePath, {responseType: 'blob'}).then(res => {
+                    let file = new File([res.data], 'tmp.jpg', {
+                        type: 'image/png; image/jpeg'
+                    })
+                    console.log(file)
+                    param.append('file', file)
+                    axios.post('[(@{/tagPredict})]', param, {
+                        'Content-type' : 'multipart/form-data'
+                    }).then(response => {
+                        console.log(response.data)
+                        console.log(response.data.length)
+                        if (response.data[0] === 'none'){
+                            infoContent.value = '未预测出合适标签'
+                            return
+                        }
+                        let flag = false;
+                        let tName;
+                        for (let i = 0; i < response.data.length; i++){
+                            tName = response.data[i]
+                            for (let i = 0; i < tags.value.length; i++){
+                                if (tags.value[i].tagName === tName){
+                                    flag = true
+                                    break
+                                }
+                            }
+                            if (!flag){
+                                let param = new FormData()
+                                param.append('pid', pid.value)
+                                param.append('tagName', tName)
+                                tags.value.push({
+                                    'tagName': tName
+                                })
+                                axios.post('[(@{/picture/addTag})]', param).then(response => {
+                                    if (response.data.trim() === 'Success'){
+                                        infoContent.value = '成功'
+                                    }else {
+                                        infoContent.value = response.data
+                                    }
+                                })
+                            }
+                            flag = false
+                        }
+                    }).catch(err => {
+                        console.log(err)
+                    })
+
+                })
+                infoTitle.value = '预测标签'
+                new bootstrap.Toast(document.getElementById("liveToast")).show()
+            }
+
+            function deletePic(){
+                let param = new FormData()
+                param.append('picture', JSON.stringify(pictures.value[pos]))
+                axios.post('[(@{/picture/deletePic})]', param).then(response => {
+                    if (response.data.trim() === 'Success'){
+                        infoContent.value = '成功'
+                        for (let i = 0; i < 4; i++){
+                            if (groups.value[i].value){
+                                groups.value[i].value = groups.value[i].value.filter((picture => picture.pid !== pictures.value[pos].pid))
+                                console.log(JSON.stringify(groups.value))
+                            }
+                        }
+                    }else {
+                        infoContent.value = response.data
+                    }
+                })
+                let deletePicW = document.getElementById('deletePic')
+                let modal = bootstrap.Modal.getInstance(deletePicW)
+                modal.hide()
+                infoTitle.value = '删除作品'
+                new bootstrap.Toast(document.getElementById("liveToast")).show()
+            }
+
+            // 详情页
+            //let detailPic = Vue.ref({"pid":46,"picName":"111","picLoc":"1\/20230506141950520.jpg","uid":1,"picView":0,"picLike":0,"picFav":0,"owner":{"uid":1,"username":"\u6D4B\u8BD5\u7528\u62371","password":null,"tel":0,"email":null},"tags":[{"tid":35,"tagName":"\u6C7D\u8F66(predicted)","tagUsed":0,"tagView":0}],"picDesc":null,"completePath":"http:\/\/pzwork.oss-cn-shanghai.aliyuncs.com\/content\/1\/20230506141950520.jpg?Expires=1683403746\u0026OSSAccessKeyId=LTAI5t9E7YPuC8oSt8NjyyA1\u0026Signature=qqtPJBi0BpLZY0AW%2FdZuoDpM0Y0%3D","thumbnailPath":"http:\/\/pzwork.oss-cn-shanghai.aliyuncs.com\/content\/1\/20230506141950520.jpg\/thumbnail?Expires=1683403746\u0026OSSAccessKeyId=LTAI5t9E7YPuC8oSt8NjyyA1\u0026Signature=NijYJe%2FlEvdpkarrzoGK1EBFG9Q%3D"})
+            let detailPic = Vue.ref()
+            let hasDetail = Vue.ref(false)
+            function openDetail(picture){
+                hasDetail.value = true
+                detailPic.value = picture
+                console.log(JSON.stringify(detailPic.value))
+                let modal = new bootstrap.Modal(document.getElementById('details'))
+                modal.show()
+            }
+
+            return {
+                currentPage,
+                totalPages,
+                pageRecords,
+                pagePrefix,
+                userPrefix,
+                uid,
+                username,
+                pictures,
+                groups,
+                pid,
+                picName,
+                tags,
+                tagName,
+                infoContent,
+                infoTitle,
+                detailPic,
+                hasDetail,
+                rename,
+                getPid,
+                addTag,
+                removeTag,
+                tagPredict,
+                deletePic,
+                openDetail
+            }
+        }
+    }).mount('#main')
+
+</script>
+
+</body>
+</html>
+

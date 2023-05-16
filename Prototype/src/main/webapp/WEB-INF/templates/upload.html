@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Test</title>
+    <script src="/static/js/vue.js"></script>
+    <link href="/static/bootstrap5/css/bootstrap.css"/>
+    <script src="/static/bootstrap5/js/bootstrap.js" ></script>
+    <link href="/static/bootstrap-icons/font/bootstrap-icons.css">
+    <script src="/static/js/axios.min.js"></script>
+
+    <script th:src="@{/static/js/vue.js}" ></script>
+    <link th:href="@{/static/bootstrap5/css/bootstrap.css}" rel="stylesheet" type="text/css"/>
+    <script th:src="@{/static/bootstrap5/js/bootstrap.bundle.js}" ></script>
+    <script th:src="@{/static/js/axios.min.js}"></script>
+</head>
+
+<body style="border:0; margin:0; padding:0;">
+<!-- 导航 -->
+<nav class="navbar navbar-light bg-light p-0">
+    <div class="container-fluid">
+        <div>
+            <a th:href="@{/}" style="text-decoration: none;">
+                <div class="navbar-brand d-flex flex-row">
+                    <div class="align-self-center"><img class="rounded-3" style="max-width: 50px; max-height: 50px;" th:src="@{/static/img/logo.jpg}"></div>
+                    <div class="align-self-center text-primary"><h2 class="ms-3 mt-2" >Ealer</h2></div>
+                </div>
+            </a>
+        </div>
+        <div class="">
+            <h1>亦乐迫真分享图库 <small>宜一试，无易事</small></h1>
+        </div>
+    </div>
+</nav>
+<div>
+    <div class="border border-secondary p-5 m-0 " style="width: 40%; position:relative; left: 30%;" id="upload">
+        <form th:action="@{/upload}" @submit.prevent="submit" method="post" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md me-5 mb-3">
+                    <div class="row">
+                        <label for="file" class="form-label">请添加您将上传的作品</label>
+                        <input class="form-control visually-hidden"
+                               @change="pickFile" name="file" id="file" type="file" accept=".png,.jpg,.bmp,.jpeg,.gif,.tiff">
+                        <img class="form-control img-fluid" id="img" @click="openInput" v-bind:src="previewPath" />
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="row mt-3 mb-3">
+                        <label for="file" class="form-label">为您的作品取名</label>
+                        <input class="form-control" name="picName" id="picName" type="text" v-model="picName" placeholder="作品名长度应小于30" minlength="3" maxlength="30">
+                    </div>
+                    <div class="row mb-3">
+                        <label for="addTag">添加标签</label>
+                        <div v-for="tag in tags" :key="tag.id" id="addTag">
+                            <div class="input-group mt-2 mb-2" >
+                                <input class="form-control " :name="'tag'+tag.id" v-model="tag.tagName" type="text" placeholder="标签名长度应小于8" maxlength="8">
+                                <button class="btn btn-outline-secondary" type="button" @click="removeTag(tag)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="btn-group mt-3">
+                            <button type="button" class="btn btn-outline-secondary" @click="tagPredict">为图像预测标签</button>
+                            <button type="button" class="btn btn-outline-secondary" @click="addTag">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-plus-square" viewBox="0 0 16 16">
+                                    <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <button type="submit" class="btn btn-primary" >提交</button>
+            </div>
+        </form>
+    </div>
+
+</div>
+<script th:inline="javascript">
+    const TagAdd = Vue.createApp({
+        setup(){
+            let file = Vue.ref()
+            let picName = Vue.ref('')
+            let tagNum = Vue.ref(0)
+            let tags = Vue.ref([])
+            const defaultPath = /*[[@{/static/bootstrap-icons/card-image.svg}]]*/;
+            let previewPath = Vue.ref(defaultPath)
+            // 防止重复添加预测
+            let isPredicted = Vue.ref(false)
+
+            function addTag(){
+                tagNum.value++
+                tags.value.push({id: tagNum.value, tagName: ''})
+            }
+
+            function removeTag(tag){
+                tags.value = tags.value.filter((t) => t !== tag)
+                console.log(JSON.stringify(tags.value))
+            }
+
+            function tagPredict(){
+                if (file.value !== null && !isPredicted.value){
+                    console.log(file.value)
+                    let param = new FormData()
+                    param.append('file', file.value)
+                    axios.post('[(@{/tagPredict})]', param, {
+                        'Content-type' : 'multipart/form-data'
+                    }).then(response => {
+                        console.log(response.data)
+                        console.log(response.data.length)
+                        if (response.data[0] === 'none'){
+                            alert("未预测出合适标签")
+                            return
+                        }
+                        for (let i = 0; i < response.data.length; i++){
+                            tagNum.value++
+                            tags.value.push({id: tagNum.value, tagName: response.data[i]})
+                        }
+                    }).catch(err => {
+                        console.log(err)
+                    })
+                    isPredicted.value = true
+                }
+            }
+
+            function openInput(){
+                document.getElementById('file').click()
+            }
+
+            function pickFile(e){
+                file.value = e.target.files[0]
+                console.log({data: file.value})
+                previewPath.value = URL.createObjectURL(file.value)
+                console.log(previewPath.value)
+                // 清空标签
+                tagNum.value = 0
+                tags.value = []
+                isPredicted.value = false
+            }
+
+            function submit(){
+                if (picName.value.trim() === ''){
+                    alert("文件名不能为空！")
+                }else if (file.value === undefined ){
+                    alert("文件未选择！")
+                }else {
+                    console.log(file.value)
+                    // 创建表单
+                    let param = new FormData()
+                    param.append('file', file.value)
+                    param.append('picName', picName.value)
+                    let tagNames = Vue.ref([])
+                    for (let index in tags.value) {
+                        tagNames.value.push(tags.value[index].tagName)
+                    }
+                    param.append('tagNames', tagNames.value)
+
+                    // 异步传送
+                    axios.post('[(@{/upload})]', param, {
+                        'Content-type' : 'multipart/form-data'
+                    }).then(response => {
+                        if (response.data.code === 0){
+                            console.log(response.data)
+                        }
+                    }).catch(err => {
+                        console.log(err)
+                    })
+
+                    //清空表单
+                    file.value = null
+                    previewPath.value = defaultPath
+                    picName.value = ''
+                    tagNum.value = 0
+                    tags.value = []
+                    isPredicted.value = false
+
+                    alert("上传成功")
+                }
+            }
+
+            return {
+                tagNum,
+                tags,
+                picName,
+                previewPath,
+                addTag,
+                removeTag,
+                tagPredict,
+                openInput,
+                pickFile,
+                submit
+            }
+        }
+    }).mount('#upload')
+
+
+</script>
+
+</body>
+</html>

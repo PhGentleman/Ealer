@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.ph.ealer.mapper.PictureMapper">
+    <resultMap id="PicturesWithUsersAndTags" type="org.ph.ealer.bean.Picture">
+        <result property="pid" column="p_id"/>
+        <result property="picName" column="pic_name"/>
+        <result property="picLoc" column="pic_loc"/>
+        <result property="uid" column="u_id"/>
+        <result property="picView" column="pic_view"/>
+        <result property="picLike" column="pic_like"/>
+        <result property="picFav" column="pic_fav"/>
+        <association property="owner" javaType="org.ph.ealer.bean.User">
+            <result property="uid"  column="u_id"/>
+            <result property="username" column="username"/>
+        </association>
+        <collection property="tags" ofType="org.ph.ealer.bean.Tag">
+            <result property="tid" column="t_id"/>
+            <result property="tagName" column="tag_name"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="PicturesWithTags" type="org.ph.ealer.bean.Picture">
+        <result property="pid" column="p_id"/>
+        <result property="picName" column="pic_name"/>
+        <result property="picLoc" column="pic_loc"/>
+        <result property="uid" column="u_id"/>
+        <result property="picView" column="pic_view"/>
+        <result property="picLike" column="pic_like"/>
+        <result property="picFav" column="pic_fav"/>
+        <collection property="tags" ofType="org.ph.ealer.bean.Tag">
+            <result property="tid" column="t_id"/>
+            <result property="tagName" column="tag_name"/>
+        </collection>
+    </resultMap>
+
+    <select id="countAllPictures" resultType="java.lang.Long">
+        select count(*) from picture
+    </select>
+
+    <select id="queryAllPictures" resultMap="PicturesWithUsersAndTags">
+        select p.*, username, t_id, tag_name from
+            (select picture.* from picture limit ${offset}, ${rows}) as p
+                left join user u on u.u_id = p.u_id
+                    left join tag t on t.t_id in
+                        (select t_id from picture_tag_map where picture_tag_map.p_id = p.p_id)
+    </select>
+
+    <select id="countUserPictures" resultType="java.lang.Long">
+        select count(*) from picture where u_id = ${uid}
+    </select>
+
+    <select id="queryUserPictures" resultMap="PicturesWithUsersAndTags">
+        select p.*, username, t_id, tag_name from
+            (select picture.* from picture where u_id = ${uid} limit ${offset}, ${rows}) as p
+                left join user u on u.u_id = p.u_id
+                    left join tag t on t.t_id in
+                        (select t_id from picture_tag_map where picture_tag_map.p_id = p.p_id)
+    </select>
+
+    <select id="queryOwner" resultType="long">
+        select u_id from picture where p_id = ${pid}
+    </select>
+
+    <insert id="uploadPicture" useGeneratedKeys="true" keyProperty="pid">
+        insert into picture (pic_name, pic_loc, u_id, pic_view, pic_like, pic_fav) value
+            (#{picName}, #{picLoc}, ${uid}, 0, 0, 0)
+    </insert>
+
+    <delete id="deletePicture">
+        delete from picture where p_id = ${pid}
+    </delete>
+
+    <update id="renamePicture">
+        update picture set pic_name = #{picName} where p_id = ${pid}
+    </update>
+
+    <insert id="createTag" keyProperty="tid" useGeneratedKeys="true">
+        insert into tag (tag_name) value (#{tagName})
+    </insert>
+
+    <delete id="deleteTag">
+        delete from tag where t_id = ${tid}
+    </delete>
+
+    <select id="queryTag" resultType="long">
+        select t_id from tag where tag_name = #{tagName}
+    </select>
+
+    <insert id="addTag">
+        insert into picture_tag_map (p_id, t_id) value (${pid}, ${tid})
+    </insert>
+    
+    <insert id="addTags">
+        insert into picture_tag_map (p_id, t_id) VALUES 
+        <foreach collection="tagIds" item="tid" separator=",">
+            (${pid}, ${tid})
+        </foreach>
+    </insert>
+
+    <delete id="removeTag" >
+        delete from picture_tag_map where p_id = ${pid} and t_id = ${tid}
+    </delete>
+</mapper>
