@@ -13,7 +13,7 @@
 2. 配置Prototype中resources下的jdbc.properties和log4j2.xml
 3. 使用阿里云OSS新建bucket
 4. 配置utils中的OssUtil
-5. 根据需要改变预测数据集或模型时需要自行寻求方案
+5. 下载model.pkl至CSRA中，有其他模型需求需要自行构建和训练
 6. Spring和Flask需要同时启动
 
 Python3.8
