@@ -6,15 +6,12 @@ from predictor import Predictor
 
 app = Flask(__name__)
 
-# 预加载变量:
 # ip白名单
 ip_whitelist = ["127.0.0.1"]
 # 加载预测器
 predictor = Predictor()
 
 
-# 映射:
-# 工作状态
 @app.route('/')
 def home():
     return '<h1 style=\'text-align: center;\'>TagPredictor is working.</h1>'
@@ -25,7 +22,6 @@ def test():
     return render_template('test.html')
 
 
-# 上传图像执行预测
 @app.route('/upload', methods=['POST'])
 def upload():
     ip = request.remote_addr
